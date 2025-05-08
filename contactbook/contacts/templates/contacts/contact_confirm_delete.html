@@ -1,12 +1,20 @@
 {% extends 'contacts/base.html' %}
 
 {% block content %}
-<h2>❗ Delete Contact</h2>
-<p>Are you sure you want to delete <strong>{{ contact.name }}</strong>?</p>
-
-<form method="post">
-    {% csrf_token %}
-    <button class="btn" type="submit">Yes, Delete</button>
-    <a href="{% url 'contact_list' %}">Cancel</a>
-</form>
+<div class="container d-flex justify-content-center align-items-center" style="height: 80vh;">
+    <div class="card shadow-lg p-4" style="max-width: 500px; width: 100%; border-radius: 8px;">
+        <h2 class="text-center mb-4" style="font-weight: 600; color: #343a40;">❗ Delete Contact</h2>
+        
+        <p class="text-center mb-4" style="font-size: 1.1rem; color: #555;">Are you sure you want to delete <strong>{{ contact.name }}</strong>?</p>
+        
+        <form method="post" class="d-flex flex-column align-items-center">
+            {% csrf_token %}
+            <button class="btn btn-danger w-100 mb-3" type="submit" style="font-weight: 600; padding: 10px 20px;">Yes, Delete</button>
+        </form>
+        
+        <div class="text-center">
+            <a href="{% url 'list_contacts' %}" class="btn btn-secondary w-100" style="font-weight: 600; padding: 10px 20px;">Cancel</a>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,25 +1,36 @@
 {% extends 'contacts/base.html' %}
 
 {% block content %}
-<div class="top-bar">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <h2>📇 Contact List</h2>
-    <a class="btn" href="{% url 'add_contact' %}">+ Add Contact</a>
+    <a class="btn btn-primary" href="{% url 'add_contact' %}">+ Add Contact</a>
 </div>
 
-<form method="get">
-    <input type="text" name="search" placeholder="Search by name..." value="{{ search_query }}">
+<!-- Search Form -->
+<form method="get" class="input-group mb-4 shadow-sm">
+    <input type="text" name="search" class="form-control" placeholder="🔍 Search by name..." value="{{ search_query }}">
+    <button type="submit" class="btn btn-outline-primary">Search</button>
 </form>
 
-{% for contact in contacts %}
-    <div class="contact-card">
-        <strong>{{ contact.name }}</strong><br>
-        📞 {{ contact.phone }} <br>
-        📧 {{ contact.email }} <br>
-        🏠 {{ contact.address }} <br>
-        <a href="{% url 'edit_contact' contact.id %}">Edit</a> |
-        <a href="{% url 'delete_contact' contact.id %}">Delete</a>
-    </div>
-{% empty %}
-    <p>No contacts found.</p>
-{% endfor %}
+<!-- Contact Cards -->
+<div class="row">
+    {% for contact in contacts %}
+        <div class="col-md-6">
+            <div class="contact-card border border-primary-subtle bg-light">
+                <h5 class="fw-bold">{{ contact.name }}</h5>
+                <p class="mb-2">
+                    📞 {{ contact.phone }}<br>
+                    📧 {{ contact.email }}<br>
+                    🏠 {{ contact.address }}
+                </p>
+                <a href="{% url 'edit_contact' contact.id %}" class="btn btn-sm btn-outline-warning me-2">Edit</a>
+                <a href="{% url 'delete_contact' contact.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <p class="text-muted">No contacts found.</p>
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}
