@@ -13,26 +13,30 @@
 
         <form method="post">
             {% csrf_token %}
-            
+
             <!-- Contact Form Fields -->
             <div class="mb-3">
                 <label for="id_name" class="form-label">Name</label>
-                <input type="text" name="name" id="id_name" class="form-control" value="{{ form.name.value }}">
+                <input type="text" name="name" id="id_name" class="form-control" 
+                       value="{{ form.name.value|default_if_none:'' }}">
             </div>
-            
+
             <div class="mb-3">
                 <label for="id_phone" class="form-label">Phone</label>
-                <input type="text" name="phone" id="id_phone" class="form-control" value="{{ form.phone.value }}">
+                <input type="text" name="phone" id="id_phone" class="form-control" 
+                       value="{{ form.phone.value|default_if_none:'' }}">
             </div>
 
             <div class="mb-3">
                 <label for="id_email" class="form-label">Email</label>
-                <input type="email" name="email" id="id_email" class="form-control" value="{{ form.email.value }}">
+                <input type="email" name="email" id="id_email" class="form-control" 
+                       value="{{ form.email.value|default_if_none:'' }}">
             </div>
 
             <div class="mb-3">
                 <label for="id_address" class="form-label">Address</label>
-                <input type="text" name="address" id="id_address" class="form-control" value="{{ form.address.value }}">
+                <input type="text" name="address" id="id_address" class="form-control" 
+                       value="{{ form.address.value|default_if_none:'' }}">
             </div>
 
             <!-- Buttons -->

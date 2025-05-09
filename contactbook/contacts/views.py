@@ -20,16 +20,24 @@ def signup_view(request):
 
 
 # LOGIN VIEW
+from django.contrib import messages
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login
+
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            login(request, user)       # Log in the authenticated user
+            login(request, user)
             return redirect('list_contacts')
+        else:
+            messages.error(request, 'Invalid username or password.')
     else:
         form = AuthenticationForm()
+
     return render(request, 'contacts/login.html', {'form': form})
+
 
 
 # LOGOUT VIEW
@@ -66,7 +74,9 @@ def add_contact(request):
             return redirect('list_contacts')
     else:
         form = ContactForm()
-    return render(request, 'contacts/contact_form.html', {'form': form})
+
+    # Pass 'home_button' as True for Add Contact page
+    return render(request, 'contacts/contact_form.html', {'form': form, 'home_button': True})
 
 
 # EDIT CONTACT VIEW (Protected)
@@ -82,7 +92,8 @@ def edit_contact(request, pk):
     else:
         form = ContactForm(instance=contact)
 
-    return render(request, 'contacts/contact_form.html', {'form': form})
+    # Pass 'home_button' as True for Edit Contact page
+    return render(request, 'contacts/contact_form.html', {'form': form, 'home_button': True})
 
 
 # DELETE CONTACT VIEW (Protected)
@@ -94,4 +105,5 @@ def delete_contact(request, pk):
         contact.delete()
         return redirect('list_contacts')
 
-    return render(request, 'contacts/contact_confirm_delete.html', {'contact': contact})
+    # Pass 'home_button' as True for Delete Contact page
+    return render(request, 'contacts/contact_confirm_delete.html', {'contact': contact, 'home_button': True})

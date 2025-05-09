@@ -58,22 +58,34 @@
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm px-4 py-2">
-        <a class="navbar-brand" href="{% url 'list_contacts' %}">📒 Contact Book</a>
-        <div class="ms-auto">
-            {% if user.is_authenticated %}
-                <span class="text-white me-3">👋 Hello, {{ user.username }}</span>
-                <form action="{% url 'logout' %}" method="post" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
-                </form>
-            {% else %}
-                <a class="btn btn-outline-light btn-sm me-2" href="{% url 'login' %}">Login</a>
-                <a class="btn btn-outline-light btn-sm" href="{% url 'signup' %}">Sign Up</a>
-            {% endif %}
-        </div>
-    </nav>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm px-4 py-2">
+    <a class="navbar-brand" href="{% url 'list_contacts' %}">📒 Contact Book</a>
+    <div class="ms-auto">
+        {% if user.is_authenticated %}
+            <span class="text-white me-3">👋 Hello, {{ user.username }}</span>
+            <form action="{% url 'logout' %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+            </form>
+        {% else %}
+            <a class="btn btn-outline-light btn-sm me-2" href="{% url 'login' %}">Login</a>
+            <a class="btn btn-outline-light btn-sm" href="{% url 'signup' %}">Sign Up</a>
+        {% endif %}
+        
+        <!-- Home Button (Visible only on Add, Edit, or Delete pages) -->
+        {% if home_button %}
+            <a href="{% url 'list_contacts' %}" class="btn btn-outline-light btn-sm ms-3">🏠 Home</a>
+        {% endif %}
+        
+        <!-- Admin View Button (Visible only for admin users) -->
+        {% if user.is_staff %}
+            <a href="{% url 'admin:index' %}" class="btn btn-outline-light btn-sm ms-3">🛠️ Admin Panel</a>
+        {% endif %}
+    </div>
+</nav>
+
+
 
     <!-- Main Content -->
     <div class="container content-wrapper my-4">
