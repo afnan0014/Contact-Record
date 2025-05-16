@@ -1,36 +1,136 @@
 {% extends 'contacts/base.html' %}
-
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="mb-4">
     <h2>📇 Contact List</h2>
-    <a class="btn btn-primary" href="{% url 'add_contact' %}">+ Add Contact</a>
-</div>
 
-<!-- Search Form -->
-<form method="get" class="input-group mb-4 shadow-sm">
-    <input type="text" name="search" class="form-control" placeholder="🔍 Search by name..." value="{{ search_query }}">
-    <button type="submit" class="btn btn-outline-primary">Search</button>
-</form>
+    <!-- Search & Select All -->
+    <div class="row mt-3 mb-3">
+        <div class="col-md-12">
+            <form method="get" action="" class="d-flex flex-wrap align-items-center gap-2">
+                <input type="text" name="search" placeholder="Search contacts..." class="form-control form-control-sm"
+                       value="{{ request.GET.search }}" style="max-width: 900px;">
+                <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                <button type="button" id="select-all" class="btn btn-outline-warning btn-sm">Select All</button>
+            </form>
+        </div>
+    </div>
 
-<!-- Contact Cards -->
-<div class="row">
-    {% for contact in contacts %}
-        <div class="col-md-6">
-            <div class="contact-card border border-primary-subtle bg-light p-3 mb-3 hover-card">
-                <h5 class="fw-bold">{{ contact.name }}</h5>
-                <p class="mb-2">
-                    📞 {{ contact.phone }}<br>
-                    📧 {{ contact.email }}<br>
-                    🏠 {{ contact.address }}
-                </p>
-                <a href="{% url 'edit_contact' contact.id %}" class="btn btn-sm btn-outline-warning me-2">Edit</a>
-                <a href="{% url 'delete_contact' contact.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+    <!-- Bulk Delete Form -->
+    <form method="post" action="{% url 'bulk_delete_contacts' %}" id="contact-form">
+        {% csrf_token %}
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+            <div class="bg-light border rounded p-2 me-5 mb-2">
+                <strong>Total:</strong> {{ total_contacts }}
+            </div>
+            <div id="buttons-wrapper" style="display: none;">
+                <strong>Selected:</strong> <span id="selected-count">0</span>
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    🗑️ Delete Selected
+                </button>
             </div>
         </div>
-    {% empty %}
-        <div class="col-12">
-            <p class="text-muted">No contacts found.</p>
+
+        <!-- Contact Cards -->
+        <div class="row">
+            {% for contact in contacts %}
+                <div class="col-md-6">
+                    <div class="contact-card border bg-light p-2 mb-3 rounded-3 d-flex align-items-start position-relative hover-card">
+
+                        <!-- Top Right Checkbox -->
+                        <input type="checkbox" name="selected_contacts" value="{{ contact.id }}"
+                               class="form-check-input contact-checkbox position-absolute"
+                               style="top: 10px; right: 10px; z-index: 2;">
+
+                        <!-- Contact Image -->
+                        {% if contact.image %}
+                            <img src="{{ contact.image.url }}" alt="Profile"
+                                 class="rounded-circle me-3"
+                                 style="width: 80px; height: 80px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-secondary me-3"
+                                 style="width: 80px; height: 80px;"></div>
+                        {% endif %}
+
+                        <!-- Info -->
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">{{ contact.name }}</h6>
+                            <ul class="mb-1 ps-3">
+                                {% for phone in contact.phone_numbers.all %}
+                                    <li>📞 {{ phone.number }}</li>
+                                {% empty %}
+                                    <li class="text-muted">📞 No phone numbers</li>
+                                {% endfor %}
+                            </ul>
+                            <p class="mb-1">✉️ {{ contact.email }}</p>
+                            <p class="mb-0">🏠 {{ contact.address }}</p>
+
+                            <!-- Actions -->
+                            <div class="text-end mt-2">
+                                <a href="{% url 'edit_contact' contact.id %}" class="btn btn-sm btn-outline-warning me-1">Edit</a>
+                                <a href="{% url 'delete_contact' contact.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-muted">No contacts available.</p>
+            {% endfor %}
         </div>
-    {% endfor %}
+    </form>
+
+    <!-- Pagination -->
+    {% if contacts.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for num in contacts.paginator.page_range %}
+                {% if contacts.number == num %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                           href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
 </div>
+
+<!-- Styles -->
+<style>
+    .hover-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: box-shadow 0.2s ease-in-out;
+    }
+</style>
+
+<!-- Scripts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkboxes = document.querySelectorAll('.contact-checkbox');
+        const deleteBtnWrapper = document.getElementById('buttons-wrapper');
+        const selectAllBtn = document.getElementById('select-all');
+        const selectedCount = document.getElementById('selected-count');
+
+        function updateDeleteVisibility() {
+            const checked = Array.from(checkboxes).filter(cb => cb.checked);
+            deleteBtnWrapper.style.display = checked.length > 0 ? 'block' : 'none';
+            selectedCount.textContent = checked.length;
+        }
+
+        // Toggle Select All
+        selectAllBtn.addEventListener('click', () => {
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            updateDeleteVisibility();
+        });
+
+        checkboxes.forEach(cb => cb.addEventListener('change', updateDeleteVisibility));
+    });
+</script>
 {% endblock %}

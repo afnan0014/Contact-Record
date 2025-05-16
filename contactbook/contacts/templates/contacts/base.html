@@ -11,94 +11,107 @@
     <!-- Custom Styles -->
     <style>
         html, body {
-            height: 100%;
             margin: 0;
+            padding: 0;
+            height: 100%;
         }
+
         body {
             display: flex;
-            flex-direction: column;
-            background-color: #f8f9fa;
+            overflow: hidden;
         }
-        .content-wrapper {
-            flex: 1;
-        }
-        .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        .btn-outline-light:hover {
-            background-color: #ffffff;
-            color: #000000;
-        }
-        footer {
+
+        .sidebar {
+            width: 240px;
             background-color: #343a40;
             color: white;
-            padding: 10px 0;
-            text-align: center;
-        }
-        .contact-card {
-            background-color: #e9f5ff;
-            border-radius: 10px;
             padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
         }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            margin: 12px 0;
+            display: block;
+            font-weight: 500;
+        }
+
+        .sidebar a:hover {
+            color: #17a2b8;
+        }
+
+        .main-content {
+            margin-left: 240px; /* same as sidebar width */
+            padding: 30px;
+            height: 100vh;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            width: 100%;
+        }
+
         .hover-card {
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-            border-radius: 8px;
-            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        
+
         .hover-card:hover {
-            transform: scale(1.01);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-            background-color: #e9f7fe; /* light blue highlight */
+            transform: translateY(-4px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-logout {
+            margin-top: 20px;
+        }
+
+        .sidebar h4 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm px-4 py-2">
-    <a class="navbar-brand" href="{% url 'list_contacts' %}">📒 Contact Book</a>
-    <div class="ms-auto">
+    <!-- Sidebar (Fixed) -->
+    <div class="sidebar">
+        <div>
+            <h4>📒 Contact Book</h4>
+            {% if user.is_authenticated %}
+                <p>👋 Hello, {{ user.username }}</p>
+
+                <a class="btn btn-outline-light w-100" href="{% url 'list_contacts' %}">🏠 Home</a>
+                <a class="btn btn-outline-light w-100" href="{% url 'add_contact' %}">➕ Add Contact</a>
+
+                {% if user.is_staff %}
+                    <a class="btn btn-outline-light w-100" href="{% url 'admin:index' %}">🛠 Admin Panel</a>
+                {% endif %}
+            {% endif %}
+        </div>
+
         {% if user.is_authenticated %}
-            <span class="text-white me-3">👋 Hello, {{ user.username }}</span>
-            <form action="{% url 'logout' %}" method="post" class="d-inline">
+            <form action="{% url 'logout' %}" method="post" class="btn-logout">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                <button class="btn btn-outline-light w-100">Logout</button>
             </form>
         {% else %}
-            <a class="btn btn-outline-light btn-sm me-2" href="{% url 'login' %}">Login</a>
-            <a class="btn btn-outline-light btn-sm" href="{% url 'signup' %}">Sign Up</a>
-        {% endif %}
-        
-        <!-- Home Button (Visible only on Add, Edit, or Delete pages) -->
-        {% if home_button %}
-            <a href="{% url 'list_contacts' %}" class="btn btn-outline-light btn-sm ms-3">🏠 Home</a>
-        {% endif %}
-        
-        <!-- Admin View Button (Visible only for admin users) -->
-        {% if user.is_staff %}
-            <a href="{% url 'admin:index' %}" class="btn btn-outline-light btn-sm ms-3">🛠️ Admin Panel</a>
+            <div>
+                <a class="btn btn-outline-light w-100 mb-2" href="{% url 'login' %}">Login</a>
+                <a class="btn btn-outline-light w-100" href="{% url 'signup' %}">Sign Up</a>
+            </div>
         {% endif %}
     </div>
-</nav>
 
-
-
-    <!-- Main Content -->
-    <div class="container content-wrapper my-4">
+    <!-- Main Content (Scrollable) -->
+    <div class="main-content">
         {% block content %}
         {% endblock %}
     </div>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <p class="mb-0">📘 Contact Book App &mdash; Built with ❤️ using Django & Bootstrap</p>
-        </div>
-    </footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

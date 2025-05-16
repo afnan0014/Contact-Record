@@ -1,9 +1,10 @@
 {% extends 'contacts/base.html' %}
+{% load widget_tweaks %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center" style="height: 80vh;">
-    <div class="card shadow-lg p-4" style="max-width: 500px; width: 100%; border-radius: 8px;">
-        <h2 class="text-center mb-4" style="font-weight: 600; color: #343a40;">
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="card shadow-lg p-4" style="max-width: 500px; width: 60%; border-radius: 8px;">
+        <h2 class="text-center mb-4" style="font-weight: 600;">
             {% if form.instance.pk %}
                 ✏️ Edit Contact
             {% else %}
@@ -11,40 +12,184 @@
             {% endif %}
         </h2>
 
-        <form method="post">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
+            {{ formset.management_form }}
+            {{ form.non_field_errors }}
 
-            <!-- Contact Form Fields -->
-            <div class="mb-3">
-                <label for="id_name" class="form-label">Name</label>
-                <input type="text" name="name" id="id_name" class="form-control" 
-                       value="{{ form.name.value|default_if_none:'' }}">
+            <!-- Profile Image -->
+            <div class="text-start mb-3">
+                {% if form.instance.image %}
+                    <img src="{{ form.instance.image.url }}" class="rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover;" alt="Contact Image">
+                {% endif %}
+                <div class="mt-2">
+                    <label class="form-label">Profile Image</label>
+                    {% if form.image.errors %}
+                        {{ form.image|add_class:"form-control is-invalid" }}
+                        {% for error in form.image.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    {% else %}
+                        {{ form.image|add_class:"form-control" }}
+                    {% endif %}
+                </div>
             </div>
 
+            <!-- Name -->
             <div class="mb-3">
-                <label for="id_phone" class="form-label">Phone</label>
-                <input type="text" name="phone" id="id_phone" class="form-control" 
-                       value="{{ form.phone.value|default_if_none:'' }}">
+                <label class="form-label">Name</label>
+                {% if form.name.errors %}
+                    {{ form.name|add_class:"form-control is-invalid" }}
+                    {% for error in form.name.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                {% else %}
+                    {{ form.name|add_class:"form-control" }}
+                {% endif %}
             </div>
 
+            <!-- Email -->
             <div class="mb-3">
-                <label for="id_email" class="form-label">Email</label>
-                <input type="email" name="email" id="id_email" class="form-control" 
-                       value="{{ form.email.value|default_if_none:'' }}">
+                <label class="form-label">Email</label>
+                {% if form.email.errors %}
+                    {{ form.email|add_class:"form-control is-invalid" }}
+                    {% for error in form.email.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                {% else %}
+                    {{ form.email|add_class:"form-control" }}
+                {% endif %}
             </div>
 
+            <!-- Address -->
             <div class="mb-3">
-                <label for="id_address" class="form-label">Address</label>
-                <input type="text" name="address" id="id_address" class="form-control" 
-                       value="{{ form.address.value|default_if_none:'' }}">
+                <label class="form-label">Address</label>
+                {% if form.address.errors %}
+                    {{ form.address|add_class:"form-control is-invalid" }}
+                    {% for error in form.address.errors %}
+                        <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                {% else %}
+                    {{ form.address|add_class:"form-control" }}
+                {% endif %}
             </div>
 
-            <!-- Buttons -->
-            <div class="d-flex justify-content-between">
-                <button class="btn btn-success" type="submit" style="font-weight: 600;">Save</button>
-                <a href="{% url 'list_contacts' %}" class="btn btn-outline-secondary" style="font-weight: 600;">Cancel</a>
+            <!-- Phone Numbers -->
+            <div id="formset-container">
+                <label class="form-label">Phone Numbers</label>
+                {% for phone_form in formset %}
+                    <div class="formset-row input-group mb-2 align-items-center">
+                        {{ phone_form.id }}
+                        {% if phone_form.number.errors %}
+                            {{ phone_form.number|add_class:"form-control is-invalid" }}
+                        {% else %}
+                            {{ phone_form.number|add_class:"form-control" }}
+                        {% endif %}
+                        {% if forloop.first %}
+                            <span class="input-group-text bg-light">Primary</span>
+                        {% else %}
+                            <button type="button" class="btn btn-outline-danger remove-formset ms-2">✖</button>
+                        {% endif %}
+                        <div style="display: none;">{{ phone_form.DELETE }}</div>
+                    </div>
+                    {% for error in phone_form.number.errors %}
+                        <div class="text-danger small mb-2">{{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+
+            <!-- Plus (+) Button -->
+            <div class="text-center mb-3">
+                <button type="button" class="btn btn-outline-secondary add-formset ms-2">➕Add Phone</button>
+            </div>
+
+            <!-- Submit -->
+            <div class="d-flex justify-content-between mt-4">
+                <button class="btn btn-success" type="submit">Save</button>
+                <a href="{% url 'list_contacts' %}" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
     </div>
 </div>
+
+<!-- JS template for new form -->
+<div id="empty-form-template" style="display: none;">
+  <div class="formset-row input-group mb-2 align-items-center">
+      <input type="hidden" name="phone_numbers-__prefix__-id" id="id_phone_numbers-__prefix__-id">
+      <input type="text" name="phone_numbers-__prefix__-number" class="form-control" id="id_phone_numbers-__prefix__-number">
+      <button type="button" class="btn btn-outline-danger remove-formset ms-2">✖</button>
+      <input type="checkbox" name="phone_numbers-__prefix__-DELETE" id="id_phone_numbers-__prefix__-DELETE" style="display: none;">
+  </div>
+</div>
+
+
+<!-- JS -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const formsetContainer = document.getElementById('formset-container');
+        const emptyFormTemplate = document.getElementById('empty-form-template').innerHTML;
+
+        document.querySelector('.add-formset').addEventListener('click', function () {
+            const totalForms = document.getElementById('id_phone_numbers-TOTAL_FORMS');
+            const count = parseInt(totalForms.value);
+            const newForm = emptyFormTemplate.replace(/__prefix__/g, count);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = newForm;
+            formsetContainer.appendChild(tempDiv.firstElementChild);
+            totalForms.value = count + 1;
+        });
+
+        formsetContainer.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-formset')) {
+                const row = e.target.closest('.formset-row');
+                const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                if (deleteInput) {
+                    deleteInput.checked = true;
+                    deleteInput.value = 'on';
+                    row.style.display = 'none';
+                } else {
+                    row.remove();
+                    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+                    totalForms.value = formsetContainer.querySelectorAll('.formset-row').length;
+                }
+            }
+        });
+
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+                alert.style.display = 'none';
+            });
+        }, 2000);
+    });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const imageInput = document.getElementById('id_image');
+    const preview = document.getElementById('image-preview');
+
+    imageInput.addEventListener('change', function () {
+        const file = imageInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                preview.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+
 {% endblock %}

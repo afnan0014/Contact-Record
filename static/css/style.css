@@ -1,0 +1,86 @@
+/* Global */
+body {
+    display: flex;
+    margin: 0;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background-color: #343a40;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar h4 {
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+}
+
+.sidebar a,
+.sidebar button {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 10px;
+    display: block;
+    border: none;
+    background: none;
+    text-align: left;
+    width: 100%;
+    padding: 8px 0;
+}
+
+.sidebar a:hover,
+.sidebar button:hover {
+    color: #17a2b8;
+}
+
+/* Main content */
+.main-content {
+    flex-grow: 1;
+    background-color: #fff;
+    padding: 30px;
+    width: 100%;
+}
+
+/* Logout button margin */
+.btn-logout {
+    margin-top: 20px;
+}
+
+/* Search Box */
+.search-box input {
+    width: 100%;
+    padding: 6px 10px;
+    margin-top: 10px;
+    border-radius: 4px;
+    border: none;
+}
+
+/* Contact count text */
+.contact-count {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-top: 10px;
+}
+
+/* Hover effect for cards */
+.hover-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
